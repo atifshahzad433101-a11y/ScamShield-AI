@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ScamShield AI | Security Command Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-mark">S</div><div><b>SCAMSHIELD</b><span>AI SECURITY PLATFORM</span></div></div>
+    <div class="side-label">WORKSPACE</div>
+    <button class="nav-item active" data-page="overview"><span>▦</span> Overview</button>
+    <button class="nav-item" data-page="scanner"><span>⌕</span> AI Scanner <i class="live-dot"></i></button>
+    <button class="nav-item" data-page="analytics"><span>◫</span> Analytics</button>
+    <button class="nav-item" data-page="history"><span>▤</span> Detection History</button>
+    <div class="side-label side-label-bottom">SYSTEM</div>
+    <div class="system-card"><div class="system-top"><span class="pulse"></span> AI ENGINE</div><strong>{{ 'ONLINE' if model_ready else 'NOT CONNECTED' }}</strong><small>Logistic Regression · TF-IDF</small></div>
+    <div class="sidebar-footer"><div class="avatar">SS</div><div><b>Research Workspace</b><small>Local administrator</small></div><span class="dots">•••</span></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar"><div><div class="crumb">Workspace <span>/</span> <b id="crumb-page">Overview</b></div><h1 id="page-title">Security overview</h1></div>
+      <div class="top-actions"><div class="status-pill"><span class="pulse"></span> SYSTEM {{ 'OPERATIONAL' if model_ready else 'OFFLINE' }}</div><div class="top-avatar">SS</div></div>
+    </header>
+
+    {% if not model_ready %}<div class="alert"><b>AI model not loaded.</b> Copy <code>scamshield_model.pkl</code> and <code>tfidf_vectorizer.pkl</code> into this folder beside <code>server.py</code>. Details: {{ model_error }}</div>{% endif %}
+
+    <section class="page active" id="page-overview">
+      <div class="welcome"><div><div class="eyebrow">THREAT INTELLIGENCE CENTER</div><h2>Your messages.<br><em>Under protection.</em></h2><p>Monitor suspicious communications and inspect potential digital threats with your trained AI model.</p><button class="primary-btn" data-go="scanner">Open AI scanner <span>↗</span></button></div><div class="welcome-art"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="shield">⬡<b>✓</b></div><div class="art-caption">AI THREAT<br>MONITORING</div></div></div>
+      <div class="section-head"><div><div class="eyebrow">LIVE WORKSPACE</div><h3>Security at a glance</h3></div><span class="muted">Current browser session</span></div>
+      <div class="metric-grid">
+        <div class="metric"><div class="metric-top"><span>Total messages analyzed</span><i class="metric-icon blue">▤</i></div><strong id="total">0</strong><small><span class="blue-text">●</span> All scans in this session</small></div>
+        <div class="metric"><div class="metric-top"><span>Potential scams</span><i class="metric-icon red">⚠</i></div><strong id="scams">0</strong><small><span class="red-text">●</span> Flagged by AI model</small></div>
+        <div class="metric"><div class="metric-top"><span>Legitimate messages</span><i class="metric-icon green">✓</i></div><strong id="legit">0</strong><small><span class="green-text">●</span> Classified as legitimate</small></div>
+        <div class="metric"><div class="metric-top"><span>Scam share</span><i class="metric-icon violet">◒</i></div><strong id="share">0<span class="unit">%</span></strong><small>Share of analyzed messages</small></div>
+      </div>
+      <div class="content-grid">
+        <div class="panel chart-panel"><div class="panel-head"><div><h3>Detection distribution</h3><p>Scam and legitimate message breakdown</p></div><span class="tag">SESSION DATA</span></div><div class="chart-wrap"><canvas id="overviewChart"></canvas><div class="chart-empty" id="chart-empty">Your detection chart will appear here<br><small>Analyze a message to get started</small></div></div></div>
+        <div class="panel activity-panel"><div class="panel-head"><div><h3>Recent activity</h3><p>Your latest message scans</p></div><button class="text-btn" data-go="history">View all ↗</button></div><div id="recent-list" class="recent-list"><div class="empty-state">No scans yet. Your recent activity will appear here.</div></div></div>
+      </div>
+      <div class="disclaimer">ⓘ Research prototype: AI classifications can be incorrect. Always verify the sender independently.</div>
+    </section>
+
+    <section class="page" id="page-scanner">
+      <div class="page-intro"><div class="eyebrow">INTELLIGENT MESSAGE INSPECTION</div><h2>AI Message Scanner</h2><p>Paste a suspicious SMS or WhatsApp message. Your trained model will classify its text patterns.</p></div>
+      <div class="scanner-layout">
+        <div class="panel scanner-panel"><div class="panel-head"><div><h3>Message analysis</h3><p>Text input · TF-IDF · Logistic Regression</p></div><span class="tag"><span class="pulse"></span> READY TO SCAN</span></div>
+          <label for="message-input">MESSAGE CONTENT</label><textarea id="message-input" placeholder="Paste the message you want to inspect here...&#10;&#10;Example: Your bank account will be blocked. Send your OTP immediately."></textarea>
+          <div class="input-foot"><span>Do not enter real passwords, OTPs or private information.</span><span id="char-count">0 characters</span></div>
+          <button class="primary-btn scan-btn" id="scan-btn">⌕ &nbsp; Analyze message <span>→</span></button>
+          <div id="scan-error" class="scan-error"></div>
+          <div id="result-box" class="result-box hidden"></div>
+        </div>
+        <div class="panel guide-panel"><div class="eyebrow">HOW IT WORKS</div><h3>Three layers of inspection</h3><div class="guide-step"><b>01</b><div><strong>Text processing</strong><p>Message text is converted into TF-IDF features.</p></div></div><div class="guide-step"><b>02</b><div><strong>AI classification</strong><p>Your trained Logistic Regression model predicts a class.</p></div></div><div class="guide-step"><b>03</b><div><strong>Risk indicators</strong><p>A basic keyword scan highlights selected warning terms.</p></div></div><div class="note-box">Prediction confidence is not a verified probability that a message is fraudulent.</div></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-analytics">
+      <div class="page-intro"><div class="eyebrow">DATA & INSIGHTS</div><h2>Analytics</h2><p>Understand the distribution of AI classifications in this browser session.</p></div>
+      <div class="metric-grid compact"><div class="metric"><span>Total analyzed</span><strong id="a-total">0</strong></div><div class="metric"><span>Scam flagged</span><strong id="a-scams" class="red-text">0</strong></div><div class="metric"><span>Legitimate</span><strong id="a-legit" class="green-text">0</strong></div><div class="metric"><span>Scam share</span><strong id="a-share">0%</strong></div></div>
+      <div class="panel analytics-panel"><div class="panel-head"><div><h3>Classification breakdown</h3><p>Based on messages analyzed in this session</p></div></div><div class="large-chart"><canvas id="analyticsChart"></canvas></div></div>
+      <div class="disclaimer">These charts describe the messages scanned here. They are not the model's test accuracy or recall.</div>
+    </section>
+
+    <section class="page" id="page-history">
+      <div class="page-intro"><div class="eyebrow">AUDIT TRAIL</div><h2>Detection history</h2><p>Review and export the messages analyzed in this browser session.</p></div>
+      <div class="panel history-panel"><div class="panel-head"><div><h3>Recent scans</h3><p id="history-count">0 records</p></div><div class="history-actions"><a class="outline-btn" href="/api/export">↓ Export CSV</a><button class="outline-btn danger-btn" id="clear-btn">Clear history</button></div></div><div class="table-scroll"><table><thead><tr><th>MESSAGE</th><th>CLASSIFICATION</th><th>CONFIDENCE</th><th>DATE & TIME</th></tr></thead><tbody id="history-body"><tr><td colspan="4" class="empty-state">No message records yet.</td></tr></tbody></table></div></div>
+    </section>
+    <footer>SCAMSHIELD AI <span>·</span> AI & DATA SCIENCE RESEARCH PROJECT <span class="footer-right">LOCAL RESEARCH BUILD · 2026</span></footer>
+  </main>
+</div>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body></html>
